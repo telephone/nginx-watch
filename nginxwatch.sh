@@ -83,14 +83,14 @@ while true; do
         # Find all .nginx.conf in web directory & exclude those that match regex
         LIST=$(find "$WWW_DIR" -type f -name *.nginx.conf -print0 \
           | xargs -0 -I {} echo "\tinclude '{}';" | grep -E -v "$REGEX")
-        [ -n "$LIST" ] && LIST="\n${LIST}\n" || LIST="${LIST}\n"
+        [ -n "$LIST" ] && LIST="\n${LIST}\n\n" || LIST="\n"
 
         # Check for existing 'Nginx Watch' block
         LINE=$(grep 'Nginx Watch Start' "$NGINX_CONFIG")
         if [ $? == 0 ]; then
           # Rebuild include/s
-          TMP=$(awk -v "list=$(echo -e "$LIST")" '/Nginx Watch Start/ \
-            {print; print list; skip = 1} /Nginx Watch End/ \
+          TMP=$(awk -v "list=$LIST" '/Nginx Watch Start/ \
+            {print; printf("%s", list); skip = 1} /Nginx Watch End/ \
             {skip = 0} skip == 0 {print}' "$NGINX_CONFIG")
           echo "$TMP" > "$NGINX_CONFIG"
         else
